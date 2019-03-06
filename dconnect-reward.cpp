@@ -6,9 +6,13 @@
 #include <eosio.token/eosio.token.hpp>
 
 namespace eosio {
-
+//on top of eos properties we add some for bounty management
 void token::create( name   issuer,
-                    asset  maximum_supply )
+                    asset  maximum_supply,
+                    name bounty_contract,
+                    name bounty_symbol,
+                    uint64_t bounty_rate
+                    )
 {
     require_auth( _self );
 
@@ -22,9 +26,13 @@ void token::create( name   issuer,
     eosio_assert( existing == statstable.end(), "token with symbol already exists" );
 
     statstable.emplace( _self, [&]( auto& s ) {
-       s.supply.symbol = maximum_supply.symbol;
-       s.max_supply    = maximum_supply;
-       s.issuer        = issuer;
+       s.bounty_contract = bounty_contract;
+       s.bounty_contract = bounty_symbol;
+       s.bounty_start    = now(); //we record the starting point
+       s.bounty_rate     = bounty_rate;
+       s.supply.symbol   = maximum_supply.symbol;
+       s.max_supply      = maximum_supply;
+       s.issuer          = issuer;
     });
 }
 
@@ -60,7 +68,7 @@ void token::issue( name to, asset quantity, string memo )
     }
 }
 
-void token::retire( asset quantity, string memo )
+void token::retire( name from, asset quantity, string memo )
 {
     auto sym = quantity.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );
@@ -82,6 +90,25 @@ void token::retire( asset quantity, string memo )
     });
 
     sub_balance( st.issuer, quantity );
+
+    accounts from_acnts( st.bounty_contract, _self );
+    const auto& from = from_acnts.get( st.bounty_symbol, "no balance object found" );
+    
+    int64_t bounty = from.balance.amount;
+    int64_t period = now() - st.bounty_start;
+    float64_t share = (float64_t) quantity / (float64_t) st.supply;
+    float64_t amount = share/(float64_t)period;
+    int64_t payout = (int64_t)(share/amount);
+    asset payout = asset(st.bounty_symbol, amount);
+    
+    
+    action(permission_level{ _self, N(active) },
+           N(eosio.token), N(transfer),
+           std::make_tuple( _self, from, payout, memo)
+    ).send();
+    //SEND_INLINE_ACTION( *this, transfer, { {_self, "active"_n} },
+    //                    { st.issuer, , quantity, memo }
+    //);
 }
 
 void token::transfer( name    from,
@@ -94,12 +121,6 @@ void token::transfer( name    from,
     eosio_assert( is_account( to ), "to account does not exist");
     auto sym = quantity.symbol.code();
     stats statstable( _self, sym.raw() );
-    if(to == _self) {
-      //TODO: calculate quantity
-      SEND_INLINE_ACTION( *this, transfer, { {_self, "active"_n} },
-                          { _self, to, quantity, memo }
-      );
-    }
     const auto& st = statstable.get( sym.raw() );
 
     require_recipient( from );
@@ -124,7 +145,7 @@ void token::sub_balance( name owner, asset value ) {
 
    from_acnts.modify( from, owner, [&]( auto& a ) {
          a.balance -= value;
-   });
+      });
 }
 
 void token::add_balance( name owner, asset value, name ram_payer )
