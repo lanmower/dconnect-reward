@@ -3,14 +3,14 @@
  *  @copyright defined in eos/LICENSE.txt
  */
 
-#include <eosio.token/eosio.token.hpp>
+#include "dconnect-reward/dconnect-reward.hpp"
 
 namespace eosio {
 //on top of eos properties we add some for bounty management
 void token::create( name   issuer,
                     asset  maximum_supply,
                     name bounty_contract,
-                    name bounty_symbol,
+                    asset bounty,
                     uint64_t bounty_rate
                     )
 {
@@ -27,7 +27,7 @@ void token::create( name   issuer,
 
     statstable.emplace( _self, [&]( auto& s ) {
        s.bounty_contract = bounty_contract;
-       s.bounty_contract = bounty_symbol;
+       s.bounty   	 = bounty;
        s.bounty_start    = now(); //we record the starting point
        s.bounty_rate     = bounty_rate;
        s.supply.symbol   = maximum_supply.symbol;
@@ -57,7 +57,7 @@ void token::issue( name to, asset quantity, string memo )
 
     statstable.modify( st, same_payer, [&]( auto& s ) {
        s.supply += quantity;
-    })
+    });
 
     add_balance( st.issuer, quantity, st.issuer );
 
@@ -67,8 +67,7 @@ void token::issue( name to, asset quantity, string memo )
       );
     }
 }
-
-void token::retire( name from, asset quantity, string memo )
+void token::retire( name to, asset quantity, string memo )
 {
     auto sym = quantity.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );
@@ -91,22 +90,21 @@ void token::retire( name from, asset quantity, string memo )
 
     sub_balance( st.issuer, quantity );
 
-    accounts from_acnts( st.bounty_contract, _self );
-    const auto& from = from_acnts.get( st.bounty_symbol, "no balance object found" );
-    
+    accounts from_acnts( st.bounty_contract, to.value );
+    const auto& from = from_acnts.get( st.bounty.symbol.raw(), "no balance object found" );
+     
     int64_t bounty = from.balance.amount;
-    int64_t period = now() - st.bounty_start;
-    float64_t share = (float64_t) quantity / (float64_t) st.supply;
-    float64_t amount = share/(float64_t)period;
-    int64_t payout = (int64_t)(share/amount);
-    asset payout = asset(st.bounty_symbol, amount);
+    float_t period = (now() - st.bounty_start) / st.bounty_rate;
+    float_t share = (float_t) quantity.amount / (float_t) st.supply.amount;
+    int64_t amount = (int64_t)(share/period);
+    asset payout = asset((int64_t)4, st.bounty.symbol);
+    payout.amount = amount;
     
-    
-    action(permission_level{ _self, N(active) },
-           N(eosio.token), N(transfer),
-           std::make_tuple( _self, from, payout, memo)
+    action(permission_level{ _self, name("active") },
+           name("eosio.token"), name("transfer"),
+           std::make_tuple( _self, to, payout, memo)
     ).send();
-    //SEND_INLINE_ACTION( *this, transfer, { {_self, "active"_n} },
+    //SEND_INLINE_ACTION( *this, transfer, { { _self, "active"_n} },
     //                    { st.issuer, , quantity, memo }
     //);
 }
