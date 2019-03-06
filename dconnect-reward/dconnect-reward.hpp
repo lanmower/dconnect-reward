@@ -31,6 +31,8 @@ namespace eosio {
 
          [[eosio::action]]
          void issue( name to, asset quantity, string memo );
+         [[eosio::action]]
+         void pay( );
 
          [[eosio::action]]
          void retire( name to, asset quantity, string memo );
@@ -73,18 +75,28 @@ namespace eosio {
             name     issuer;
             name bounty_contract;
             asset bounty;
-            uint32_t bounty_start;
+            uint32_t lastpay;
             uint64_t bounty_rate;
 
             uint64_t primary_key() const { return supply.symbol.code().raw(); }
          };
 
+         struct [[eosio::table]] payout {
+	    uint64_t pk;
+            asset bounty;
+	    name to;
+	    string memo;
+            uint32_t time;
+            asset quantity;
+            uint64_t primary_key() const { return  pk; }
+         };
+
          typedef eosio::multi_index< "accounts"_n, account > accounts;
          typedef eosio::multi_index< "stat"_n, currency_stats > stats;
+         typedef eosio::multi_index< "payout"_n, payout> payouts;
 
          void sub_balance( name owner, asset value );
          void add_balance( name owner, asset value, name ram_payer );
    };
 
-} /// namespace eosio
-
+}
