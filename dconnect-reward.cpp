@@ -49,7 +49,7 @@ void token::issue( name to, asset quantity, string memo )
 
     statstable.modify( st, same_payer, [&]( auto& s ) {
        s.supply += quantity;
-    });
+    })
 
     add_balance( st.issuer, quantity, st.issuer );
 
