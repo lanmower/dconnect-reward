@@ -13,6 +13,36 @@
             ]
         },
         {
+            "name": "payout",
+            "base": "",
+            "fields": [
+                {
+                    "name": "pk",
+                    "type": "uint64"
+                },
+                {
+                    "name": "bounty",
+                    "type": "asset"
+                },
+                {
+                    "name": "to",
+                    "type": "name"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "time",
+                    "type": "uint32"
+                },
+                {
+                    "name": "quantity",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
             "name": "close",
             "base": "",
             "fields": [
@@ -141,6 +171,12 @@
             ]
         },
         {
+            "name": "pay",
+            "base": "",
+            "fields": [
+            ]
+        },
+        {
             "name": "transfer",
             "base": "",
             "fields": [
@@ -191,6 +227,11 @@
             "ricardian_contract": ""
         },
         {
+            "name": "pay",
+            "type": "pay",
+            "ricardian_contract": ""
+        },
+        {
             "name": "transfer",
             "type": "transfer",
             "ricardian_contract": ""
@@ -207,6 +248,13 @@
         {
             "name": "stat",
             "type": "currency_stats",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+        {
+            "name": "payout",
+            "type": "payout",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
