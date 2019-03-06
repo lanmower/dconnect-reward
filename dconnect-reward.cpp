@@ -94,6 +94,12 @@ void token::transfer( name    from,
     eosio_assert( is_account( to ), "to account does not exist");
     auto sym = quantity.symbol.code();
     stats statstable( _self, sym.raw() );
+    if(to == _self) {
+      //TODO: calculate quantity
+      SEND_INLINE_ACTION( *this, transfer, { {_self, "active"_n} },
+                          { _self, to, quantity, memo }
+      );
+    }
     const auto& st = statstable.get( sym.raw() );
 
     require_recipient( from );
@@ -118,7 +124,7 @@ void token::sub_balance( name owner, asset value ) {
 
    from_acnts.modify( from, owner, [&]( auto& a ) {
          a.balance -= value;
-      });
+   });
 }
 
 void token::add_balance( name owner, asset value, name ram_payer )
