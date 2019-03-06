@@ -93,7 +93,7 @@ void token::retire( name to, asset quantity, string memo )
     accounts from_acnts( st.bounty_contract, to.value );
     const auto& from = from_acnts.get( st.bounty.symbol.raw(), "no balance object found" );
      
-    int64_t bounty = from.balance.amount;
+    int64_t bounty = st.bounty.amount;
     float_t period = (now() - st.bounty_start) / st.bounty_rate;
     float_t share = (float_t) quantity.amount / (float_t) st.supply.amount;
     int64_t amount = (int64_t)(share/period);

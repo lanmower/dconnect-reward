@@ -37,6 +37,18 @@
                 {
                     "name": "maximum_supply",
                     "type": "asset"
+                },
+                {
+                    "name": "bounty_contract",
+                    "type": "name"
+                },
+                {
+                    "name": "bounty",
+                    "type": "asset"
+                },
+                {
+                    "name": "bounty_rate",
+                    "type": "uint64"
                 }
             ]
         },
