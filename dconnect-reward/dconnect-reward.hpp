@@ -6,6 +6,7 @@
 
 #include <eosiolib/asset.hpp>
 #include <eosiolib/eosio.hpp>
+#include <eosiolib/transaction.hpp>
 
 #include <string>
 
@@ -33,6 +34,9 @@ namespace eosio {
          void issue( name to, asset quantity, string memo );
          [[eosio::action]]
          void pay( );
+
+         [[eosio::action]]
+         void reward( name to, name vote, asset quantity, string memo, int64_t content);
 
          [[eosio::action]]
          void retire( name to, asset quantity, string memo );
@@ -88,12 +92,15 @@ namespace eosio {
 	    string memo;
             uint32_t time;
             asset quantity;
+            name vote;
+            uint64_t content;
+
             uint64_t primary_key() const { return  pk; }
          };
 
          typedef eosio::multi_index< "accounts"_n, account > accounts;
          typedef eosio::multi_index< "stat"_n, currency_stats > stats;
-         typedef eosio::multi_index< "payout"_n, payout> payouts;
+         typedef eosio::multi_index< "payouts"_n, payout> payouts;
 
          void sub_balance( name owner, asset value );
          void add_balance( name owner, asset value, name ram_payer );

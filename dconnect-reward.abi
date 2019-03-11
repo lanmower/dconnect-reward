@@ -39,6 +39,14 @@
                 {
                     "name": "quantity",
                     "type": "asset"
+                },
+                {
+                    "name": "vote",
+                    "type": "name"
+                },
+                {
+                    "name": "content",
+                    "type": "uint64"
                 }
             ]
         },
@@ -171,6 +179,32 @@
             ]
         },
         {
+            "name": "reward",
+            "base": "",
+            "fields": [
+                {
+                    "name": "to",
+                    "type": "name"
+                },
+                {
+                    "name": "vote",
+                    "type": "name"
+                },
+                {
+                    "name": "quantity",
+                    "type": "asset"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                },
+                {
+                    "name": "content",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
             "name": "pay",
             "base": "",
             "fields": [
@@ -224,6 +258,11 @@
         {
             "name": "retire",
             "type": "retire",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "reward",
+            "type": "reward"
             "ricardian_contract": ""
         },
         {
