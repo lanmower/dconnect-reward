@@ -43,10 +43,6 @@
                 {
                     "name": "vote",
                     "type": "name"
-                },
-                {
-                    "name": "content",
-                    "type": "uint64"
                 }
             ]
         },
@@ -292,7 +288,7 @@
             "key_types": []
         }
         {
-            "name": "payout",
+            "name": "payouts",
             "type": "payout",
             "index_type": "i64",
             "key_names": [],

@@ -148,25 +148,36 @@ void token::retire( name to,  asset quantity, string memo )
 
 void token::pay() {
     require_auth( _self );
-
+    print("running payments\n");
     payouts payoutstable( _self, name("payouts").value);
+    print("payouts table");
     payouts rewardstable( _self, name("rewards").value);
-
-    for(auto itr = payoutstable.begin(); itr != payoutstable.end();) {
+    print("rewards table");
+    int done = false;
+    print(done);
+    for(auto itr = payoutstable.begin(); itr != payoutstable.end() && !done;) {
+      print(done);
+      print(itr->to);
       action(permission_level{ _self, name("active") },
        name("eosio.token"), name("transfer"),
        std::make_tuple( _self, itr->to, itr->bounty, itr->memo)
       ).send();
       itr = payoutstable.erase(itr);
+      done = true;
     }
-
-    for(auto itr = rewardstable.begin(); itr != rewardstable.end();) {
+    print(done);
+    for(auto itr = rewardstable.begin(); itr != rewardstable.end() && !done;) {
+      print("processing reward\n"); 
+      print(itr->to); 
       stats statstable( _self, itr->quantity.symbol.code().raw() );
       auto existing = statstable.find(  itr->quantity.symbol.code().raw() );
       eosio_assert( existing != statstable.end(), "token with symbol does not exist, create token before issue" );
       const auto& st = *existing;
 
-      if(itr->time < now() + 86400) continue;
+      if(now() < itr->time + 86400) {
+	itr++;
+	continue;
+      }
 
       asset payout_asset = asset((uint64_t)4, itr->quantity.symbol);
       payout_asset.amount = itr->quantity.amount*1009/1000;
@@ -174,15 +185,18 @@ void token::pay() {
 
       asset vote_asset = asset((uint64_t)4, itr->quantity.symbol);
       vote_asset.amount = (itr->quantity.amount*1001/1000)-itr->quantity.amount;
-      add_balance( itr->to, vote_asset, _self );
+      add_balance( itr->vote, vote_asset, _self );
 
       asset add_asset = asset((uint64_t)4, itr->quantity.symbol);
       add_asset.amount = payout_asset.amount + vote_asset.amount - itr->quantity.amount;
       statstable.modify( st, same_payer, [&]( auto& s ) {
          s.supply += add_asset;
       });
+
       itr = rewardstable.erase(itr);
+      done = true;
     }
+    print(done);
     transaction out{};
     out.actions.emplace_back(permission_level{_self, name("active")}, _self, name("pay"), std::make_tuple());
     out.delay_sec = 60;
