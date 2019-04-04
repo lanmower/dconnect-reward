@@ -97,6 +97,22 @@ namespace eosio {
 
             uint64_t primary_key() const { return  pk; }
          };
+	   
+         struct [[eosio::table]] usertotals {
+	    uint64_t pk;
+            name name;
+            asset quantity;
+            uint64_t primary_key() const { return  pk; }
+         };
+	   
+         struct [[eosio::table]] posttotals {
+	    uint64_t pk;
+            uint64_t content;
+            asset quantity;
+            uint64_t primary_key() const { return  pk; }
+         };
+
+
 
          typedef eosio::multi_index< "accounts"_n, account > accounts;
          typedef eosio::multi_index< "stat"_n, currency_stats > stats;
