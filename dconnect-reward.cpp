@@ -268,7 +268,7 @@ void token::sub_balance( name owner, asset value ) {
    eosio_assert( from.balance.amount >= value.amount, "overdrawn balance" );
 
    if( from == from_acnts.end() ) {
-      from_acnts.emplace( ram_payer, [&]( auto& a ){
+      from_acnts.emplace( owner, [&]( auto& a ){
         a.balance = 1;
       });
    } else {
