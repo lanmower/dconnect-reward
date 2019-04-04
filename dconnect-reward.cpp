@@ -269,7 +269,7 @@ void token::sub_balance( name owner, asset value ) {
 
    if( from == from_acnts.end() ) {
       from_acnts.emplace( owner, [&]( auto& a ){
-        a.balance = 1;
+        a.balance.value = 1;
       });
    } else {
       from_acnts.modify( from, owner, [&]( auto& a ) {
