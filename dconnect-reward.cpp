@@ -96,6 +96,38 @@ void token::reward(  name to, name vote,asset quantity, string memo, int64_t con
       a.time = now();
       a.quantity = quantity;
     });
+
+   totals usertotals( _self, to.value );
+   auto total = usertotals.find( 0 );
+   if( to == usertotals.end() ) {
+      usertotals.emplace( _self, [&]( auto& a ){
+	      a.pk = rewardstable.available_primary_key();
+	      a.content = content;
+	      a.user = to;
+	      a.time = now();
+	      a.quantity = quantity;
+      });
+   } else {
+      usertotals.modify( to, same_payer, [&]( auto& a ) {
+        a.quantity.amount += quantity.amount;
+      });
+   }
+
+   totals posttotals( _self, content );
+   auto total = usertotals.find( 0 );
+   if( to == usertotals.end() ) {
+      usertotals.emplace( _self, [&]( auto& a ){
+	      a.pk = rewardstable.available_primary_key();
+	      a.content = content;
+	      a.user = to;
+	      a.time = now();
+	      a.quantity = quantity;
+      });
+   } else {
+      usertotals.modify( to, same_payer, [&]( auto& a ) {
+        a.quantity.amount += quantity.amount;
+      });
+   }
 }
 
 void token::retire( name to,  asset quantity, string memo )
@@ -235,9 +267,15 @@ void token::sub_balance( name owner, asset value ) {
    const auto& from = from_acnts.get( value.symbol.code().raw(), "no balance object found" );
    eosio_assert( from.balance.amount >= value.amount, "overdrawn balance" );
 
-   from_acnts.modify( from, owner, [&]( auto& a ) {
-         a.balance -= value;
+   if( from == from_acnts.end() ) {
+      from_acnts.emplace( ram_payer, [&]( auto& a ){
+        a.balance = 1;
       });
+   } else {
+      from_acnts.modify( from, owner, [&]( auto& a ) {
+	a.balance -= value;
+      });
+   }
 }
 
 void token::add_balance( name owner, asset value, name ram_payer )
