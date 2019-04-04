@@ -99,7 +99,7 @@ void token::reward(  name to, name vote,asset quantity, string memo, int64_t con
 
    totals usertotals( _self, to.value );
    auto total = usertotals.find( 0 );
-   if( to == usertotals.end() ) {
+   if( total == usertotals.end() ) {
       usertotals.emplace( _self, [&]( auto& a ){
 	      a.pk = rewardstable.available_primary_key();
 	      a.content = content;
@@ -114,9 +114,9 @@ void token::reward(  name to, name vote,asset quantity, string memo, int64_t con
    }
 
    totals posttotals( _self, content );
-   auto total = usertotals.find( 0 );
-   if( to == usertotals.end() ) {
-      usertotals.emplace( _self, [&]( auto& a ){
+   auto ptotal = posttotals.find( 0 );
+   if( ptotal == posttotals.end() ) {
+      posttotals.emplace( _self, [&]( auto& a ){
 	      a.pk = rewardstable.available_primary_key();
 	      a.content = content;
 	      a.user = to;
@@ -124,7 +124,7 @@ void token::reward(  name to, name vote,asset quantity, string memo, int64_t con
 	      a.quantity = quantity;
       });
    } else {
-      usertotals.modify( to, same_payer, [&]( auto& a ) {
+      posttotals.modify( to, same_payer, [&]( auto& a ) {
         a.quantity.amount += quantity.amount;
       });
    }
