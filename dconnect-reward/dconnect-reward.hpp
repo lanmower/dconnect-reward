@@ -98,25 +98,19 @@ namespace eosio {
             uint64_t primary_key() const { return  pk; }
          };
 	   
-         struct [[eosio::table]] usertotals {
+         struct [[eosio::table]] total {
 	    uint64_t pk;
-            name name;
+	    name name;
+	    uint64_t name;
+            uint32_t time;
             asset quantity;
             uint64_t primary_key() const { return  pk; }
          };
 	   
-         struct [[eosio::table]] posttotals {
-	    uint64_t pk;
-            uint64_t content;
-            asset quantity;
-            uint64_t primary_key() const { return  pk; }
-         };
-
-
-
          typedef eosio::multi_index< "accounts"_n, account > accounts;
          typedef eosio::multi_index< "stat"_n, currency_stats > stats;
          typedef eosio::multi_index< "payouts"_n, payout> payouts;
+         typedef eosio::multi_index< "totals"_n, total> totals;
 
          void sub_balance( name owner, asset value );
          void add_balance( name owner, asset value, name ram_payer );
