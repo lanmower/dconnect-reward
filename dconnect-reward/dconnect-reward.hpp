@@ -101,9 +101,9 @@ namespace eosio {
          struct [[eosio::table]] total {
 	    uint64_t pk;
 	    name name;
-	    uint64_t name;
             uint32_t time;
             asset quantity;
+            uint64_t content;
             uint64_t primary_key() const { return  pk; }
          };
 	   
